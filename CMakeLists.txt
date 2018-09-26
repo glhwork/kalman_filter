@@ -23,7 +23,7 @@ generate_messages(
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES kalman_filter_
+#  LIBRARIES kalman_filter
 #  CATKIN_DEPENDS geometry_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -33,5 +33,15 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_main src/main.cpp)
+add_library(filter
+  src/KalmanFilter.cpp
+)
+add_executable(kf_main 
+  src/kf_main.cpp
+  src/KalmanFilter.cpp
+)
+target_link_libraries(kf_main
+  filter
+  ${catkin_LIBRARIES}
+)
 
