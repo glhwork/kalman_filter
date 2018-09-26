@@ -103,7 +103,7 @@ void KalmanFilter::Trilateration(const Eigen::Vector4d& distance) {
 Eigen::Matrix<double, 4, 6> KalmanFilter::GetHmatrix(Eigen::Vector3d& p) {
   Eigen::Matrix<double, 4, 6> h = Eigen::MatrixXd::Zero(4, 6);
   std::vector<double> denomi;
-  for (size_t i = 0; i < uwb_input.size(); i++) {
+  for (size_t i = 0; i < uwb_input.size(); i++) {(state(0), state(1), state(2))
     double d;
     d = sqrt(pow((uwb_input[i]._pos(0) - p(0)), 2) + 
              pow((uwb_input[i]._pos(1) - p(1)), 2) +
@@ -129,19 +129,22 @@ Eigen::Vector3d KalmanFilter::DataFusion(const Eigen::Vector4d& distance) {
     Eigen::Vector3d tmp_state = state.head(3);
     return tmp_state;    
   } else {
-    Eigen::Matrix<double, 6, 6> q_t;
-    q_t = 0.00001 * Eigen::MatrixXd::Identity(6, 6);
-    Eigen::Matrix<double, 6, 6> f_t = Eigen::MatrixXd::Identity(6, 6);
+    Eigen::Matrix<double, 6, 6> q_t;    
+    Eigen::Matrix<double, 6, 6> f_t;
+    Eigen::Matrix<double, 4, 4> r_t;
+    Eigen::Matrix<double, 4, 6> h;
+    Eigen::MatrixXd k_t;
+
+    f_t = Eigen::MatrixXd::Identity(6, 6);           
     // f_t(1,4) = 
     // f_t(2,5) =
     // f_t(3,6) =
     state = f_t * state;// + wt;
+    q_t = 0.00001 * Eigen::MatrixXd::Identity(6, 6);
     p = f_t * p * f_t.transpose() + q_t;
     Eigen::Vector3d tmp_v = state.head(3);
-    Eigen::Matrix<double, 4, 6> h = GetHmatrix(tmp_v);
-    Eigen::Matrix<double, 4, 4> r_t;
-    r_t = 0.1 * Eigen::MatrixXd::Identity(4, 4);
-    Eigen::MatrixXd k_t;
+    h = GetHmatrix(tmp_v);    
+    r_t = 0.1 * Eigen::MatrixXd::Identity(4, 4);    
     k_t = p * h.transpose() * (h * p * h.transpose() + r_t).inverse();
     state = state + k_t * (distance - h * state);
     p = p - k_t * h * p;
