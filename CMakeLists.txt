@@ -5,6 +5,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
+  nav_msgs
   roscpp
   rospy
   std_msgs
@@ -13,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files (
   FILES
-  uwb_info.msg
+  Uwbdis.msg
 )
 
 generate_messages(
@@ -35,10 +36,12 @@ include_directories(
 
 add_library(filter
   src/KalmanFilter.cpp
+  src/KFRos.cpp
 )
 add_executable(kf_main 
   src/kf_main.cpp
   src/KalmanFilter.cpp
+  src/KFRos.cpp
 )
 target_link_libraries(kf_main
   filter
