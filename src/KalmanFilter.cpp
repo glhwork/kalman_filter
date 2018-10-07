@@ -12,10 +12,10 @@ using k_filter::KalmanFilter;
 k_filter::KalmanFilter::KalmanFilter(std::string file_name_1,
                                      std::string file_name_2) {
     
+
+  state = Eigen::VectorXd(6);
   ReadPosi(file_name_1);
   ReadAccel(file_name_2);
-  state = Eigen::VectorXd(6);
-  state << 0, 0, 0, 0, 0, 0;
   if_init = false;
   p = Eigen::MatrixXd::Identity(p.rows(), p.cols());
 
@@ -38,6 +38,7 @@ void k_filter::KalmanFilter::ReadPosi(std::string file_name) {
     std::cerr << "I don't have UWB position" << std::endl;
   }
   fins.close();
+
 }
 
 void k_filter::KalmanFilter::ReadAccel(std::string file_name) {
@@ -47,13 +48,16 @@ void k_filter::KalmanFilter::ReadAccel(std::string file_name) {
     std::string line;
     while (getline(fins, line)) {
       std::stringstream ss(line);
-      double acc_x, acc_y, acc_z;
-      ss >> acc_x >> acc_y >> acc_z;
+      double vx, vy, vz, acc_x, acc_y, acc_z;
+      ss >> vx >> vy >> vz >> acc_x >> acc_y >> acc_z;
       acc << acc_x, acc_y, acc_z;
+      state(3) = vx;
+      state(4) = vy;
+      state(5) = vz;
     }        
-    std::cout << "acceleration got" << std::endl;
+    std::cout << "acceleration and velocity got" << std::endl;
   } else {
-    std::cerr << "I don't have acceleration" << std::endl;
+    std::cerr << "I don't have acceleration and velocity" << std::endl;
   }
   fins.close();
 
@@ -104,7 +108,7 @@ void KalmanFilter::Trilateration(const Eigen::Vector3d& distance) {
                        pow(y1, 2) - pow(y2, 2) +
                        pow(z1, 2) - pow(z2, 2) +
                        pow(d2, 2) - pow(d1, 2)) / 2;
-	    count++;
+      count++;
     }    
   }
 
@@ -181,6 +185,7 @@ Eigen::Vector3d KalmanFilter::DataFusion(const Eigen::Vector3d& distance,
     p = f_t * p * f_t.transpose() + q_t;
     Eigen::Vector3d tmp_vec = state.head(3);
     h = GetHmatrix(tmp_vec);
+    // is r_t calculated or randomly determined
     r_t = 0.1 * Eigen::MatrixXd::Identity(3, 3);
     k_t = p * h.transpose() * (h * p * h.transpose() + r_t).inverse();
     state = state + k_t * (distance - h * state);

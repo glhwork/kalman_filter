@@ -8,7 +8,7 @@ KFRos::KFRos(std::string file_name_1,
              ros::NodeHandle n) {
   
   start = false;
-  filter = k_filter::KalmanFilter(file_name_1, file_name_2);
+  filter_1 = k_filter::KalmanFilter(file_name_1, file_name_2);
   position_pub = n.advertise<geometry_msgs::Point>("global_position", 100);
   pose_pub = n.advertise<nav_msgs::Odometry>("global_pose", 100);
 
@@ -22,11 +22,13 @@ void KFRos::GetRangeCallback(const kalman_filter::Uwbdis& uwb_dis) {
            uwb_dis.T_A2;
   if (!start) {
     t = ros::Time::now().toSec();
+    pre_t = ros::Time::now().toSec();
     start = true;
   } else {
-    t = abs(t - ros::Time::now().toSec());
+    t = ros::Time::now().toSec() - pre_t;
+    pre_t = ros::Time::now().toSec();
   }
-  Eigen::Vector3d position = filter.DataFusion(range, t);
+  Eigen::Vector3d position = filter_1.DataFusion(range, t);
   geometry_msgs::Point p;
   p.x = position(0);
   p.y = position(1);

@@ -24,7 +24,7 @@ class KFRos {
  private:
   double t;
   bool start;
-  k_filter::KalmanFilter filter;
+  k_filter::KalmanFilter filter_1;
   ros::Publisher position_pub;
   ros::Publisher pose_pub;
   

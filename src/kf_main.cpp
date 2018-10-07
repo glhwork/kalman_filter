@@ -10,5 +10,11 @@ int main(int argc, char** argv) {
   std::string addr_1 = "/home/george/renov_ws/src/kalman_filter/data/uwb_position.txt";
   std::string addr_2 = "/home/george/renov_ws/src/kalman_filter/data/acceleration.txt";
   kf_ros::KFRos localize(addr_1, addr_2, n);
+
+  ros::Subscriber range_sub = n.subscribe("uwb_dis_info", 100, 
+                                          &kf_ros::KFRos::GetRangeCallback,
+                                          &localize);
+  ros::spin();
+  
   return 0;
 }
